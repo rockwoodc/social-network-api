@@ -2,24 +2,23 @@ const { Thought, User } = require("../models");
 
 const ThoughtController = {
   // add Thought to User
-  addThought({ params, body }, res) {
-    console.log(body);
-    Thought.create(body)
-      .then(({ _id }) => {
+  addThought(req, res) {
+    Thought.create(req.body)
+      .then((dbThoughtData) => {
         return User.findOneAndUpdate(
-          { _id: params.UserId },
+          { _id: req.body.UserId },
           //mongodb functions start with a dollar sign
-          { $push: { Thoughts: _id } },
-          //let us receive the updated User wi/Thoughts
-          { new: true, runValidators: true }
+          { $push: { thought:dbThoughtData._id} },
+          //let us receive the updated User w/Thoughts
+          { new: true}
         );
       })
-      .then((dbUserData) => {
-        if (!dbUserData) {
-          res.status(404).json({ message: "No User found with this id!" });
-          return;
-        }
-        res.json(dbUserData);
+      .then((dbThoughtData) => {
+        // if (!dbThoughtData) {
+        //   res.status(404).json({ message: "No User found with this id!" });
+        //   return;
+        // }
+        res.json(dbThoughtData);
       })
       .catch((err) => res.json(err));
   },
@@ -50,7 +49,7 @@ const ThoughtController = {
         }
         return User.findOneAndUpdate(
           { _id: params.UserId },
-          { $pull: { Thoughts: params.ThoughtId } },
+          { $pull: { Thought: params.ThoughtId } },
           { new: true }
         );
       })
